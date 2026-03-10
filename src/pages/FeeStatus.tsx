@@ -7,7 +7,7 @@ import AppSidebar from "@/components/AppSidebar";
 const FeeStatus = () => {
   const [playerId, setPlayerId] = useState("");
   const [status, setStatus] = useState<"paid" | "unpaid" | null>(null);
-  const [studentName, setStudentName] = useState("");
+  const [playerName, setPlayerName] = useState("");
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
 
@@ -24,7 +24,7 @@ const FeeStatus = () => {
 
     const { data, error } = await supabase
       .from("players")
-      .select("fee_status, registrations(student_name)")
+      .select("player_name, fee_status")
       .eq("player_id", playerId.trim().toUpperCase())
       .maybeSingle();
 
@@ -43,8 +43,7 @@ const FeeStatus = () => {
     }
 
     setStatus(data.fee_status as "paid" | "unpaid");
-    const reg = data.registrations as any;
-    setStudentName(reg?.student_name || "");
+    setPlayerName(data.player_name || "");
   };
 
   return (
@@ -100,8 +99,8 @@ const FeeStatus = () => {
             ) : (
               <XCircle className="w-16 h-16 text-red-500 mx-auto" />
             )}
-            {studentName && (
-              <p className="font-body text-sm text-muted-foreground">{studentName}</p>
+            {playerName && (
+              <p className="font-body text-base font-medium text-foreground">{playerName}</p>
             )}
             <p
               className={`font-display text-5xl tracking-wider ${
