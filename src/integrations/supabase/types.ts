@@ -14,6 +14,38 @@ export type Database = {
   }
   public: {
     Tables: {
+      players: {
+        Row: {
+          created_at: string
+          fee_status: string
+          id: string
+          player_id: string
+          registration_id: string
+        }
+        Insert: {
+          created_at?: string
+          fee_status?: string
+          id?: string
+          player_id: string
+          registration_id: string
+        }
+        Update: {
+          created_at?: string
+          fee_status?: string
+          id?: string
+          player_id?: string
+          registration_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "players_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: true
+            referencedRelation: "registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       registrations: {
         Row: {
           age: number
