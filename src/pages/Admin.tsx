@@ -4,10 +4,10 @@ import { toast } from "sonner";
 import { Lock, LogOut, Users, Search, Plus, Pencil, Check, X, IdCard } from "lucide-react";
 import AppSidebar from "@/components/AppSidebar";
 
-const ADMIN_PASSWORD = "shah2026";
-
 const Admin = () => {
   const [authenticated, setAuthenticated] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [registrations, setRegistrations] = useState<any[]>([]);
   const [players, setPlayers] = useState<any[]>([]);
@@ -24,22 +24,35 @@ const Admin = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
 
-  const handleLogin = (e: React.FormEvent) => {
+  // Check existing session on mount
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setAuthenticated(!!session);
+      setAuthLoading(false);
+    });
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setAuthenticated(!!session);
+      setAuthLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === ADMIN_PASSWORD) {
-      setAuthenticated(true);
-      sessionStorage.setItem("admin_auth", "true");
-      toast.success("Welcome, Admin!");
+    setAuthLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+    setAuthLoading(false);
+    if (error) {
+      toast.error("Invalid credentials");
     } else {
-      toast.error("Incorrect password");
+      toast.success("Welcome, Admin!");
     }
   };
-
-  useEffect(() => {
-    if (sessionStorage.getItem("admin_auth") === "true") {
-      setAuthenticated(true);
-    }
-  }, []);
 
   const fetchData = async () => {
     setLoading(true);
@@ -56,9 +69,9 @@ const Admin = () => {
     if (authenticated) fetchData();
   }, [authenticated]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     setAuthenticated(false);
-    sessionStorage.removeItem("admin_auth");
   };
 
   const createPlayer = async (e: React.FormEvent) => {
@@ -137,6 +150,15 @@ const Admin = () => {
       p.player_name.toLowerCase().includes(playerSearch.toLowerCase())
   );
 
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-secondary flex items-center justify-center">
+        <AppSidebar />
+        <p className="text-muted-foreground font-body">Loading...</p>
+      </div>
+    );
+  }
+
   if (!authenticated) {
     return (
       <div className="min-h-screen bg-secondary flex items-center justify-center px-4">
@@ -151,21 +173,31 @@ const Admin = () => {
             </div>
             <h1 className="font-display text-3xl text-foreground tracking-wide">Admin Access</h1>
             <p className="text-muted-foreground text-sm text-center font-body">
-              Enter the admin password to continue
+              Sign in with your admin account
             </p>
           </div>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email"
+            className="w-full px-4 py-3 rounded-lg border border-input bg-background text-foreground placeholder:text-muted-foreground font-body focus:outline-none focus:ring-2 focus:ring-ring transition"
+            required
+          />
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Password"
             className="w-full px-4 py-3 rounded-lg border border-input bg-background text-foreground placeholder:text-muted-foreground font-body focus:outline-none focus:ring-2 focus:ring-ring transition"
+            required
           />
           <button
             type="submit"
-            className="w-full py-3 rounded-lg bg-primary text-primary-foreground font-body font-bold hover:bg-primary/90 transition"
+            disabled={authLoading}
+            className="w-full py-3 rounded-lg bg-primary text-primary-foreground font-body font-bold hover:bg-primary/90 transition disabled:opacity-50"
           >
-            Enter Dashboard
+            {authLoading ? "Signing in..." : "Sign In"}
           </button>
         </form>
       </div>
