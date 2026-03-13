@@ -145,6 +145,17 @@ const Admin = () => {
     else { toast.success(`Fee status → ${newStatus.toUpperCase()}`); fetchData(); }
   };
 
+  const deletePlayer = async (player: any) => {
+    if (!confirm(`Are you sure you want to delete this Player ID "${player.player_id}"?`)) return;
+    const { error } = await supabase.from("players").delete().eq("id", player.id);
+    if (error) {
+      toast.error("Failed to delete player");
+      return;
+    }
+    toast.success("Player ID deleted");
+    fetchData();
+  };
+
   // --- Auth screens ---
   if (authLoading) {
     return (
