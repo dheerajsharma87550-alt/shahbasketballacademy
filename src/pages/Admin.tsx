@@ -260,6 +260,7 @@ const Admin = () => {
                   <thead className="bg-muted">
                     <tr>
                       <th className="px-4 py-3 font-semibold text-foreground">#</th>
+                      <th className="px-4 py-3 font-semibold text-foreground">Player ID</th>
                       <th className="px-4 py-3 font-semibold text-foreground">Student Name</th>
                       <th className="px-4 py-3 font-semibold text-foreground">Age</th>
                       <th className="px-4 py-3 font-semibold text-foreground">Parent Name</th>
