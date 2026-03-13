@@ -25,7 +25,7 @@ const FeeStatus = () => {
     const { data, error } = await supabase
       .from("players")
       .select("player_name, fee_status")
-      .eq("player_id", playerId.trim().toUpperCase())
+      .ilike("player_id", playerId.trim())
       .maybeSingle();
 
     setLoading(false);
