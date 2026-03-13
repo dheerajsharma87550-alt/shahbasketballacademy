@@ -344,6 +344,7 @@ const Admin = () => {
                       <th className="px-4 py-3 font-semibold text-foreground">#</th>
                       <th className="px-4 py-3 font-semibold text-foreground">Player ID</th>
                       <th className="px-4 py-3 font-semibold text-foreground">Player Name</th>
+                      <th className="px-4 py-3 font-semibold text-foreground">Linked Registration</th>
                       <th className="px-4 py-3 font-semibold text-foreground">Fee Status</th>
                       <th className="px-4 py-3 font-semibold text-foreground">Actions</th>
                     </tr>
