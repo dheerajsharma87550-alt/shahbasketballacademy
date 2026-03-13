@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Lock, LogOut, Users, Search, Plus, Pencil, Check, X, IdCard, Trash2, Megaphone } from "lucide-react";
+import { Lock, LogOut, Users, Search, Plus, Pencil, Check, X, IdCard, Trash2, Megaphone, AlertTriangle } from "lucide-react";
 import AppSidebar from "@/components/AppSidebar";
 import StatsCards from "@/components/admin/StatsCards";
 import ExportButtons from "@/components/admin/ExportButtons";
@@ -145,6 +145,17 @@ const Admin = () => {
     else { toast.success(`Fee status → ${newStatus.toUpperCase()}`); fetchData(); }
   };
 
+  const deletePlayer = async (player: any) => {
+    if (!confirm(`Are you sure you want to delete this Player ID "${player.player_id}"?`)) return;
+    const { error } = await supabase.from("players").delete().eq("id", player.id);
+    if (error) {
+      toast.error("Failed to delete player");
+      return;
+    }
+    toast.success("Player ID deleted");
+    fetchData();
+  };
+
   // --- Auth screens ---
   if (authLoading) {
     return (
@@ -260,6 +271,7 @@ const Admin = () => {
                   <thead className="bg-muted">
                     <tr>
                       <th className="px-4 py-3 font-semibold text-foreground">#</th>
+                      <th className="px-4 py-3 font-semibold text-foreground">Player ID</th>
                       <th className="px-4 py-3 font-semibold text-foreground">Student Name</th>
                       <th className="px-4 py-3 font-semibold text-foreground">Age</th>
                       <th className="px-4 py-3 font-semibold text-foreground">Parent Name</th>
@@ -271,9 +283,14 @@ const Admin = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredRegs.map((r, i) => (
+                    {filteredRegs.map((r, i) => {
+                      const linkedPlayer = players.find(
+                        (p) => p.player_name.toLowerCase() === r.student_name.toLowerCase()
+                      );
+                      return (
                       <tr key={r.id} className="border-t border-border hover:bg-muted/50 transition">
                         <td className="px-4 py-3 text-muted-foreground">{i + 1}</td>
+                        <td className="px-4 py-3 font-mono font-bold text-primary tracking-wider text-xs">{linkedPlayer?.player_id || "—"}</td>
                         <td className="px-4 py-3 font-medium text-foreground">{r.student_name}</td>
                         <td className="px-4 py-3 text-foreground">{r.age}</td>
                         <td className="px-4 py-3 text-foreground">{r.parent_name}</td>
@@ -294,7 +311,8 @@ const Admin = () => {
                           </button>
                         </td>
                       </tr>
-                    ))}
+                    );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -337,12 +355,17 @@ const Admin = () => {
                       <th className="px-4 py-3 font-semibold text-foreground">#</th>
                       <th className="px-4 py-3 font-semibold text-foreground">Player ID</th>
                       <th className="px-4 py-3 font-semibold text-foreground">Player Name</th>
+                      <th className="px-4 py-3 font-semibold text-foreground">Linked Registration</th>
                       <th className="px-4 py-3 font-semibold text-foreground">Fee Status</th>
                       <th className="px-4 py-3 font-semibold text-foreground">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredPlayers.map((p, i) => (
+                    {filteredPlayers.map((p, i) => {
+                      const linkedReg = registrations.find(
+                        (r) => r.student_name.toLowerCase() === p.player_name.toLowerCase()
+                      );
+                      return (
                       <tr key={p.id} className="border-t border-border hover:bg-muted/50 transition">
                         <td className="px-4 py-3 text-muted-foreground">{i + 1}</td>
                         <td className="px-4 py-3 font-mono font-bold text-primary tracking-wider">{p.player_id}</td>
@@ -351,10 +374,10 @@ const Admin = () => {
                             <div className="flex items-center gap-2">
                               <input value={editName} onChange={(e) => setEditName(e.target.value)} autoFocus
                                 className="px-3 py-1.5 rounded-md border border-input bg-background text-foreground font-body text-sm focus:outline-none focus:ring-2 focus:ring-ring transition w-full max-w-xs" />
-                              <button onClick={() => saveEdit(p.player_id)} className="w-7 h-7 rounded-md bg-green-100 text-green-700 flex items-center justify-center hover:bg-green-200 transition">
+                              <button onClick={() => saveEdit(p.player_id)} className="w-7 h-7 rounded-md bg-primary/10 text-primary flex items-center justify-center hover:bg-primary/20 transition">
                                 <Check className="w-4 h-4" />
                               </button>
-                              <button onClick={() => setEditingId(null)} className="w-7 h-7 rounded-md bg-red-100 text-red-700 flex items-center justify-center hover:bg-red-200 transition">
+                              <button onClick={() => setEditingId(null)} className="w-7 h-7 rounded-md bg-destructive/10 text-destructive flex items-center justify-center hover:bg-destructive/20 transition">
                                 <X className="w-4 h-4" />
                               </button>
                             </div>
@@ -362,23 +385,37 @@ const Admin = () => {
                             <span className="font-medium text-foreground">{p.player_name}</span>
                           )}
                         </td>
+                        <td className="px-4 py-3 text-muted-foreground text-xs">
+                          {linkedReg ? (
+                            <span className="text-foreground">{linkedReg.email} · {linkedReg.batch === "below_14" ? "Below 14" : "Above 14"}</span>
+                          ) : (
+                            <span className="italic">No linked registration</span>
+                          )}
+                        </td>
                         <td className="px-4 py-3">
                           <button onClick={() => toggleFeeStatus(p.player_id, p.fee_status)}
                             className={`inline-block px-3 py-1 rounded-full text-xs font-bold cursor-pointer transition ${
-                              p.fee_status === "paid" ? "bg-green-100 text-green-700 hover:bg-green-200" : "bg-red-100 text-red-700 hover:bg-red-200"
+                              p.fee_status === "paid" ? "bg-primary/10 text-primary hover:bg-primary/20" : "bg-destructive/10 text-destructive hover:bg-destructive/20"
                             }`}>
                             {p.fee_status.toUpperCase()}
                           </button>
                         </td>
                         <td className="px-4 py-3">
-                          {editingId !== p.player_id && (
-                            <button onClick={() => startEdit(p)} className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted transition">
-                              <Pencil className="w-3.5 h-3.5" /> Edit Name
+                          <div className="flex items-center gap-1">
+                            {editingId !== p.player_id && (
+                              <button onClick={() => startEdit(p)} className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted transition">
+                                <Pencil className="w-3.5 h-3.5" /> Edit
+                              </button>
+                            )}
+                            <button onClick={() => deletePlayer(p)}
+                              className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-destructive/10 transition text-muted-foreground hover:text-destructive">
+                              <Trash2 className="w-4 h-4" />
                             </button>
-                          )}
+                          </div>
                         </td>
                       </tr>
-                    ))}
+                    );
+                    })}
                   </tbody>
                 </table>
               </div>
