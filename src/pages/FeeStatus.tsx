@@ -25,7 +25,7 @@ const FeeStatus = () => {
     const { data, error } = await supabase
       .from("players")
       .select("player_name, fee_status")
-      .eq("player_id", playerId.trim().toUpperCase())
+      .ilike("player_id", playerId.trim())
       .maybeSingle();
 
     setLoading(false);
@@ -37,7 +37,7 @@ const FeeStatus = () => {
     }
 
     if (!data) {
-      toast.error("Player ID not found");
+      toast.error("Player ID not found. Please check the ID and try again.");
       setStatus(null);
       return;
     }
