@@ -32,7 +32,7 @@ const FeeStatus = () => {
 
     if (error) {
       toast.error("Something went wrong");
-      console.error(error);
+      if (import.meta.env.DEV) console.error(error);
       return;
     }
 

@@ -47,7 +47,7 @@ const RegistrationForm = () => {
 
     if (error) {
       toast.error("Registration failed. Please try again.");
-      console.error(error);
+      if (import.meta.env.DEV) console.error(error);
     } else {
       toast.success("Registration successful! Welcome to Shah Basketball Academy 🏀");
       setForm({ student_name: "", age: "", parent_name: "", phone: "", email: "", batch: "" });
