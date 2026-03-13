@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Lock, LogOut, Users, Search, Plus, Pencil, Check, X, IdCard, Trash2, Megaphone } from "lucide-react";
+import { Lock, LogOut, Users, Search, Plus, Pencil, Check, X, IdCard, Trash2, Megaphone, AlertTriangle } from "lucide-react";
 import AppSidebar from "@/components/AppSidebar";
 import StatsCards from "@/components/admin/StatsCards";
 import ExportButtons from "@/components/admin/ExportButtons";
