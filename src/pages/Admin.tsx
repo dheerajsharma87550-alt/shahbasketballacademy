@@ -272,9 +272,14 @@ const Admin = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredRegs.map((r, i) => (
+                    {filteredRegs.map((r, i) => {
+                      const linkedPlayer = players.find(
+                        (p) => p.player_name.toLowerCase() === r.student_name.toLowerCase()
+                      );
+                      return (
                       <tr key={r.id} className="border-t border-border hover:bg-muted/50 transition">
                         <td className="px-4 py-3 text-muted-foreground">{i + 1}</td>
+                        <td className="px-4 py-3 font-mono font-bold text-primary tracking-wider text-xs">{linkedPlayer?.player_id || "—"}</td>
                         <td className="px-4 py-3 font-medium text-foreground">{r.student_name}</td>
                         <td className="px-4 py-3 text-foreground">{r.age}</td>
                         <td className="px-4 py-3 text-foreground">{r.parent_name}</td>
