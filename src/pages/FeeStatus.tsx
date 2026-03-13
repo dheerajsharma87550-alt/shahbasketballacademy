@@ -37,7 +37,7 @@ const FeeStatus = () => {
     }
 
     if (!data) {
-      toast.error("Player ID not found");
+      toast.error("Player ID not found. Please check the ID and try again.");
       setStatus(null);
       return;
     }
